@@ -1,0 +1,97 @@
+# ----------------------------------------
+# SERVER 端口等配置
+# ----------------------------------------
+server:
+  port: 9003
+  tomcat:
+    maxThreads: 200
+    maxConnections: 10000
+    acceptCount: 5000
+    minSpareThreads: 200
+
+# ----------------------------------------
+# Redis数据库索引（默认为0）,如果设置为1，那么存入的key-value都存放在select 1中
+# ----------------------------------------
+spring:
+  application:
+    name: datamanage
+  redis:
+    database: 0
+    host: 47.93.41.147
+    port: 6379
+    password: redispw
+    timeout: 200
+    pool:
+      maxTotal: 200
+
+# ----------------------------------------
+# REDIS KEYS
+# ----------------------------------------
+air:
+  data:
+    avg: zhiyuan_database_air:data1:avg
+    record: zhiyuan_database_air:data1:record
+    ravg: zhiyuan_database_air:data1:repair_avg
+    rrecord: zhiyuan_database_air:data1:repair_record
+    device-tags: zhiyuan_database_air:devices:tags
+    device-timestamp: zhiyuan_database_air:devices:timestamp
+    device-update: zhiyuan_database_air:updata:devices
+    prothreshold: zhiyuan_database_air:prothreshold:tags
+    prostatusstage: zhiyuan_database_air:prostatusstage:tags
+# iot.client必须与硬件连接服务里面iot.client一致
+iot:
+  client: zhiyuan_database_iot:auth:client
+# ----------------------------------------
+# TSDB PROPERTIES
+# ----------------------------------------
+aliyun:
+  tsdb:
+    host: ts-bp1173f63h7390xyo.hitsdb.rds.aliyuncs.com
+    port: 3242
+    tsql:
+      port: 3306
+      host: ts-bp1173f63h7390xyo.tsql.hitsdb.rds.aliyuncs.com
+    # 原始数据时间线
+    original: airOriginal
+    # 移动平均值时间线
+    airdata: airData
+
+# ----------------------------------------
+# KAFKA PROPERTIES
+# ----------------------------------------
+kafka:
+  topic-name: device-report
+  topic-message-name: device-message
+  consumer:
+    servers: 47.106.89.242:9092
+    enable:
+      auto:
+        commit: true
+    session:
+      timeout: 10000
+    auto:
+      commit:
+        interval: 5000
+      offset:
+        reset: earliest
+    group:
+      id: device-report
+    concurrency: 1
+
+  producer:
+    servers: 47.106.89.242:9092
+    retries: 0
+    compression:
+      type: snappy
+    batch:
+      size: 16384
+    linger: 5
+    buffer:
+      memory: 33554432
+
+# ----------------------------------------
+# 移动平均值和故障值快照存储位置
+# ----------------------------------------
+file:
+  average: /data/yingjian/
+  break-down: /data/yingjianbreakdown/

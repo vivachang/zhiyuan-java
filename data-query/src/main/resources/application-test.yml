@@ -1,0 +1,25 @@
+server:
+  port: 9002
+  tomcat:
+    maxThreads: 200
+    maxConnections: 10000
+    acceptCount: 5000
+    minSpareThreads: 200
+
+# spring配置
+spring:
+  application:
+    name: dataquery
+
+# tsdb配置
+aliyun:
+  tsdb:
+    host: ts-bp1173f63h7390xyo.hitsdb.rds.aliyuncs.com
+      port: 3242
+      tsql:
+        port: 3306
+        host: ts-bp1173f63h7390xyo.tsql.hitsdb.rds.aliyuncs.com
+    # 原始数据时间线,必须与数据处理中一致
+    original: airOriginal
+    # 移动平均值时间线,必须与数据处理中一致
+    airdata: airData

@@ -1,0 +1,100 @@
+# ----------------------------------------
+# SPRING PROPERTIES
+# ----------------------------------------
+spring:
+  application:
+    name: data-acquisition
+  http:
+    converters:
+      preferred-json-mapper: gson
+  gson:
+    pretty-printing: true
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    # 如果需要密码则此password去掉#
+    #password: redispw
+    database: 0
+    ssl: false
+    timeout: 3000ms
+    jedis.pool.max-active: 8
+    jedis.pool.max-idle: 8
+    jedis.pool.max-wait: -1ms
+    jedis.pool.min-idle: 0
+  kafka:
+    producer:
+      bootstrap-servers: 192.168.0.111:9092
+      acks: all
+      retries: 3
+      properties:
+        retry:
+          backoff:
+            ms: 500
+        max:
+          in:
+            flight:
+              requests:
+                per:
+                  connection: 1
+          block:
+            ms: 20000
+        reconnect:
+          backoff:
+            ms: 1000
+            max:
+              ms: 5000
+        transaction:
+          timeout.ms: 20000
+        enable:
+          idempotence: true
+
+# ----------------------------------------
+# EUREKA PROPERTIES
+# ----------------------------------------
+eureka:
+  instance:
+    hostname: ${spring.cloud.client.ip-address}
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    lease-expiration-duration-in-seconds: 15
+    lease-renewal-interval-in-seconds: 5
+  client:
+    register-with-eureka: true
+    fetch-registry: false
+    service-url.defaultZone: http://localhost:60000/eureka
+
+# ----------------------------------------
+# WEB PROPERTIES
+# ----------------------------------------
+server:
+  address: ${local.host}
+  port: 50000
+
+# ----------------------------------------
+# NETTY PROPERTIES
+# ----------------------------------------
+netty:
+  tcp-host: ${local.host}
+  tcp-port: 32768
+  boss-count: 1
+  worker-count: 10
+  keep-alive: true
+  backlog: 128
+  auth-max-wait: 10s
+
+# ----------------------------------------
+# KAFKA TOPICS
+# ----------------------------------------
+kafka:
+  topic-name: device-report
+  topic-message-name: device-message
+
+local:
+  host: localhost
+
+# ----------------------------------------
+# REDIS KEYS
+# ----------------------------------------
+iot:
+  online: zhiyuan_database_iot:client:online
+  client: zhiyuan_database_iot:auth:client

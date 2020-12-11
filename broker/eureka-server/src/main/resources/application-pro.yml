@@ -1,0 +1,24 @@
+server:
+  port: 60000
+
+spring:
+  application:
+  name: eureka-server
+
+# ----------------------------------------
+# EUREKA PROPERTIES
+# ----------------------------------------
+eureka:
+  instance:
+    hostname: ${spring.cloud.client.ip-address}
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    lease-expiration-duration-in-seconds: 2
+    lease-renewal-interval-in-seconds: 1
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url.defaultZone: http://${local.host}:${server.port}/eureka
+
+local:
+  host: localhost
