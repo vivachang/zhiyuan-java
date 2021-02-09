@@ -8,6 +8,7 @@ import com.zy.iot.config.FileDir;
 import com.zy.iot.datahandle.model.*;
 import com.zy.iot.datahandle.sevice.FileService;
 import com.zy.iot.utils.DateUtils;
+import oadd.com.google.gson.JsonArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,6 @@ public class SchedulerTask {
     @Autowired
     private FileDir fileDir;
 
-    private JSONArray dataArray;
-
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
@@ -61,7 +60,7 @@ public class SchedulerTask {
         }
         // 从缓存中取得缓存的数据
         Map<String,String> records = redisCache.getHashMap(constant.redis_air_data_record);
-        dataArray = new JSONArray();
+        JSONArray dataArray = new JSONArray();
         Set<String> isSet = new HashSet<>();
         for(Map.Entry<String,String> ent : records.entrySet()){
             try{
@@ -84,11 +83,11 @@ public class SchedulerTask {
                     proObj = JSONObject.parseObject(prostatusstage);
                 }
                 // 判断十分钟数据不能重复写入
-                if(isSet.contains(airData.getAvgId())){
+                if(isSet.contains(filed)){
                     continue;
                 }
                 tsdbService.airData2TsdbSync(airData,obj.toJavaObject(Map.class),proObj);
-                isSet.add(airData.getAvgId());
+                isSet.add(filed);
                 //上报数据的设备加入缓存
                 long recTs =Long.valueOf(ent.getValue());
                 // 超过15分钟的数据删除且跳过
@@ -98,7 +97,7 @@ public class SchedulerTask {
                     continue;
                 }
                 redisCache.setHashMapfiled(constant.REDIS_AIR_UPDATA_DEVICES,airData.getDeviceId(),String.valueOf(ts));
-                avgDataAndCheck(airData);
+                avgDataAndCheck(airData,dataArray);
             }catch (Exception e){
                 logger.error("项目运行报错：" + e.getMessage());
             }
@@ -119,7 +118,7 @@ public class SchedulerTask {
      * 数据丢失检查
      * @param airData
      */
-    private void avgDataAndCheck(AirData airData){
+    private void avgDataAndCheck(AirData airData, JSONArray array){
         String deviceId =  airData.getDeviceId();
         String tagsVal = redisCache.getHashMapValue(constant.REDIS_AIR_DEVICES_TAGS,deviceId);
         if (null==tagsVal){
@@ -149,7 +148,7 @@ public class SchedulerTask {
         String timestamp = DateUtils.format(DateUtils.FORMAT_YYYY_MM_DD_HHMM,new Date()) + ":00.000";
         String timestampf = DateUtils.format(DateUtils.FORMAT_YYYY_MM_DD_HHMM,new Date()) + ":00";
         avgObject.put("timestamp",timestampf);
-        dataArray.add(avgObject);
+        array.add(avgObject);
         // 如果丢失数据则写入丢失数据异常文件,如果是第一次计算则不算数据丢失
         long firstTime = Long.parseLong(redisCache.getHashMapValue(constant.REDIS_AIR_DEVICES_TIMESTAMP,deviceId));
         long tt = System.currentTimeMillis();
@@ -178,7 +177,7 @@ public class SchedulerTask {
         // 从缓存中取得缓存的数据
         Map<String,String> records = redisCache.getHashMap(constant.redis_air_data_repair_record);
         long ts = System.currentTimeMillis();
-        dataArray = new JSONArray();
+        JSONArray dataArray = new JSONArray();
         for(Map.Entry<String,String> ent : records.entrySet()){
             try{
                 String filed = ent.getKey();
@@ -190,7 +189,7 @@ public class SchedulerTask {
                 }
                 JSONObject obj = JSONObject.parseObject(tagsVal);
                 obj.remove("status");
-                tsdbService.airRepairData2TsdbSync(airData,obj.toJavaObject(Map.class));
+                //tsdbService.airRepairData2TsdbSync(airData,obj.toJavaObject(Map.class));
                 long recTs =Long.valueOf(ent.getValue());
                 // 超过15分钟的数据删除且跳过
                 if (ts-recTs>15*60*1000){

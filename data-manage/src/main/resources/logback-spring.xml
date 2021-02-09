@@ -232,6 +232,9 @@
             <appender-ref ref="FILEINFO"/>
             <appender-ref ref="FILEDEBUG"/>
         </root>
+        <root level="DEBUG">
+            <appender-ref ref="STDOUT"/>
+        </root>
     </springProfile>
 
 </configuration>

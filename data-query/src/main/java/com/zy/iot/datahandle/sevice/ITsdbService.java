@@ -60,4 +60,11 @@ public interface ITsdbService {
 
     Boolean deleteData(JSONObject json);
 
+    /**
+     * 查询传入监测点的第一条原始数据
+     * @param tsdbQP
+     * @return
+     */
+    List<AirQueryData> queryFirstData(TSDBQueryParam tsdbQP);
+
 }

@@ -48,15 +48,15 @@ iot:
 # ----------------------------------------
 aliyun:
   tsdb:
-    host: ts-wz9q4b40u613itu9c.hitsdb.rds.aliyuncs.com
+    host: ts-2ze583zll1242h95j.hitsdb.rds.aliyuncs.com
     port: 3242
     tsql:
       port: 3306
-      host: ts-wz9q4b40u613itu9c.tsql.hitsdb.rds.aliyuncs.com
+      host: ts-2ze583zll1242h95j.tsql.hitsdb.rds.aliyuncs.com
     # 原始数据时间线
-    original: airOriginal
+    original: airOriginal_v2
     # 移动平均值时间线
-    airdata: airData
+    airdata: airData_v2
 
 # ----------------------------------------
 # KAFKA PROPERTIES

@@ -55,4 +55,6 @@ public interface ITsdbService {
      */
     JSONArray queryData(TSDBQueryParam tsdbQP);
 
+    void airDataRepair2TsdbSync(Map<String,Object> map);
+
 }

@@ -37,7 +37,7 @@ public class TsdbCon {
      */
     private Connection getTsdbCon() {
         try {
-            if (connection==null || connection.isClosed()){
+            if (connection==null || connection.isValid(0) || connection.isClosed()){
                 Class.forName("org.apache.drill.jdbc.Driver");
                 String jdbcUrl = String.format("jdbc:drill:drillbit=%s:%s", tsqlHost, tsqlport);
                 System.out.println("Connecting to database @ " + jdbcUrl + "  ...");
@@ -56,8 +56,9 @@ public class TsdbCon {
      */
     public JSONArray querySql(String sql) {
         JSONArray resList = new JSONArray();
+        Statement stmt = null;
         try{
-            Statement stmt = getTsdbCon().createStatement();
+            stmt = getTsdbCon().createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()){
                 JSONObject object = new JSONObject();
@@ -75,6 +76,13 @@ public class TsdbCon {
             }
         }catch (SQLException e){
             logger.error("项目运行报错：" + e.getMessage());
+        }finally {
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+            }catch(SQLException se){
+            }
         }
         return resList;
     }
@@ -86,8 +94,9 @@ public class TsdbCon {
      */
     public Map<String,List<AirQueryData>> queryKVSql(String sql) {
         Map<String,List<AirQueryData>> map = new HashMap<>();
+        Statement stmt = null;
         try{
-            Statement stmt = getTsdbCon().createStatement();
+            stmt = getTsdbCon().createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()){
                 AirQueryData airQueryData = new AirQueryData();
@@ -111,20 +120,36 @@ public class TsdbCon {
             }
         }catch (SQLException e){
             logger.error("项目运行报错：" + e.getMessage());
+        }finally {
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+            }catch(SQLException se){
+            }
         }
         return map;
     }
 
     public Integer querySqlCount(String sql) {
+        Statement stmt = null;
+        int count = 0;
         try{
-            Statement stmt = getTsdbCon().createStatement();
+            stmt = getTsdbCon().createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             if(rs.next()){
-                return rs.getInt(1);
+                count =  rs.getInt(1);
             }
         }catch (SQLException e){
             logger.error("项目运行报错：" + e.getMessage());
+        }finally {
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+            }catch(SQLException se){
+            }
         }
-        return 0;
+        return count;
     }
 }

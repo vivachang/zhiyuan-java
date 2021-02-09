@@ -157,6 +157,42 @@ public class DataController {
      * @param params
      * @return
      */
+    @RequestMapping("/api/airdata/first")
+    public HashMap<String, Object> dataFirstQuery(@RequestParam Map<String, Object> params){
+        HashMap<String,Object> returnMap = new HashMap<>();
+
+        TSDBQueryParam tsqp = new TSDBQueryParam();
+        tsqp.setMetric(tbAirOriginal);
+        Long end = System.currentTimeMillis();
+        if (params.get("endTime") !=null){
+            end = DateUtils.parse("yyyy-MM-dd HH:mm:ss",params.get("endTime").toString()).getTime();
+        }
+        Long start = end - 7*24*3600*1000L;
+        if(params.get("startTime")!= null){
+            start = DateUtils.parse("yyyy-MM-dd HH:mm:ss",params.get("startTime").toString()).getTime();
+        }
+        tsqp.setStartTime(start);
+        tsqp.setEndTime(end);
+        Map<String,String> inkv = new HashMap<>();
+        if (params.get("monitorIds")!=null && !"".equals(params.get("monitorIds"))){
+            inkv.put("monitorId",params.get("monitorIds").toString());
+        }
+        if (inkv.size()>0){
+            tsqp.setTagInKVMap(inkv);
+        }
+        List<AirQueryData> list = tsdbService.queryFirstData(tsqp);
+
+        returnMap.put("code", 200);
+        returnMap.put("msg", "success");
+        returnMap.put("body",list);
+        return returnMap;
+    }
+
+    /**
+     * 查询平均数据
+     * @param params
+     * @return
+     */
     @RequestMapping("/api/airdata/average")
     public HashMap<String, Object> dataAverageQuery(@RequestParam Map<String, Object> params){
         HashMap<String,Object> returnMap = new HashMap<>();

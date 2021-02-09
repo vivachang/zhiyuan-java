@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.zy.iot.datahandle.model.AirQueryData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
@@ -52,8 +51,9 @@ public class TsdbCon {
      */
     public List<AirQueryData> querySql(String sql) {
         List<AirQueryData> resList = new ArrayList<>();
+        Statement stmt = null;
         try{
-            Statement stmt = getTsdbCon().createStatement();
+            stmt = getTsdbCon().createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()){
                 AirQueryData airQueryData = new AirQueryData();
@@ -72,6 +72,13 @@ public class TsdbCon {
             }
         }catch (SQLException e){
             e.printStackTrace();
+        }finally {
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+            }catch(SQLException se){
+            }
         }
         return resList;
     }
@@ -83,8 +90,9 @@ public class TsdbCon {
      */
     public List<AirQueryData> queryAvgSql(String sql) {
         List<AirQueryData> resList = new ArrayList<>();
+        Statement stmt = null;
         try{
-            Statement stmt = getTsdbCon().createStatement();
+            stmt = getTsdbCon().createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()){
                 AirQueryData airQueryData = new AirQueryData();
@@ -104,6 +112,13 @@ public class TsdbCon {
             }
         }catch (SQLException e){
             e.printStackTrace();
+        }finally {
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+            }catch(SQLException se){
+            }
         }
         return resList;
     }
@@ -115,8 +130,9 @@ public class TsdbCon {
      */
     public Map<String,List<AirQueryData>> queryKVSql(String sql) {
         Map<String,List<AirQueryData>> map = new HashMap<>();
+        Statement stmt = null;
         try{
-            Statement stmt = getTsdbCon().createStatement();
+            stmt = getTsdbCon().createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()){
                 AirQueryData airQueryData = new AirQueryData();
@@ -140,20 +156,36 @@ public class TsdbCon {
             }
         }catch (SQLException e){
             e.printStackTrace();
+        }finally {
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+            }catch(SQLException se){
+            }
         }
         return map;
     }
 
     public Integer querySqlCount(String sql) {
+        int count = 0;
+        Statement stmt = null;
         try{
-            Statement stmt = getTsdbCon().createStatement();
+            stmt = getTsdbCon().createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             if(rs.next()){
-                return rs.getInt(1);
+                count =  rs.getInt(1);
             }
         }catch (SQLException e){
             e.printStackTrace();
+        }finally {
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+            }catch(SQLException se){
+            }
         }
-        return 0;
+        return count;
     }
 }

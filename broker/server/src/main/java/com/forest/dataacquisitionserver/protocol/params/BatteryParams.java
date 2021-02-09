@@ -9,6 +9,12 @@ import lombok.Setter;
 public class BatteryParams {
     @SerializedName("battery")
     private Integer battery;
+    @SerializedName("coordinate")
+    private String coordinate;
+    @SerializedName("signal")
+    private Integer signal;
+    @SerializedName("status")
+    private Integer status;
     private String clientId;
     private String event;
 }

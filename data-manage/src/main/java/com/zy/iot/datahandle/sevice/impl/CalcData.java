@@ -58,21 +58,31 @@ public class CalcData implements ICalcData {
     @Async
     public void caclData(JSONObject obj){
         // 设备状态为禁用直接丢弃数据
-        String status = redisCache.getHashMapValue(constant.AUTH_CLIENT_REDIS_PREFIX,obj.getString("clientId"));
-        if("0".equals(status)){
-            logger.debug("硬件没有上线，丢弃数据：" + obj);
-            return;
-        }
+//        String status = redisCache.getHashMapValue(constant.AUTH_CLIENT_REDIS_PREFIX,obj.getString("clientId"));
+//        if("0".equals(status)){
+//            logger.debug("硬件没有上线，丢弃数据：" + obj);
+//            return;
+//        }
         // json数据转成bean
         AirData airData = new AirData(obj);
+        String avgId = airData.getAvgId();
+        String deviceId = airData.getDeviceId();
+        // 上一次接收数据的时间和本次数据时间间隔不能小于55秒
+        String lastTimestamp = redisCache.getHashMapValue("zhiyuan_database_air:devices:lasttimestamp",deviceId);
+        if(!StringUtils.isEmpty(lastTimestamp) && (airData.getTimestamp() - Long.parseLong(lastTimestamp)) < 59000){
+            logger.info("{}一分钟内丢弃重复数据{}",deviceId,airData.getTimestamp());
+            return;
+        }else{
+            logger.info("{}保存正常数据{}",deviceId,airData.getTimestamp());
+            redisCache.setHashMapfiled("zhiyuan_database_air:devices:lasttimestamp", deviceId, airData.getTimestamp().toString());
+        }
         // 检查数据
         if (checkAbnormal(airData)){
             return;
         }
         // 保存数据
         saveAirOriginalData(airData);
-        String avgId = airData.getAvgId();
-        String deviceId = airData.getDeviceId();
+
         // 确定十分钟内同一设备唯一id
         String filed = avgId.toString()+"_"+deviceId.toString();
         String data = redisCache.getHashMapValue(constant.redis_air_data_avg,filed);

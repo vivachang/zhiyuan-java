@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -48,6 +49,7 @@ public class TsdbService implements ITsdbService {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @PostConstruct
     public void init(){
         TSDBConfig config = TSDBConfig.address(host, port).config();
         tsdb = TSDBClientFactory.connect(config);
@@ -254,6 +256,31 @@ public class TsdbService implements ITsdbService {
         }
         avg.setNum(avg.getNum() + 1);
         return avg;
+    }
+
+    @Override
+    public void airDataRepair2TsdbSync(Map<String,Object> map){
+        logger.info("快照写入移动平均值开始：{}",map.toString());
+        Date date = DateUtils.toDate(DateUtils.FORMAT_BAR_LONG_DATETIME,map.get("timestamp").toString());
+        Long timestamp = date.getTime();
+        Map<String,Object> fields = new HashMap<>();
+        fields.put("TVOC",map.get("TVOC"));
+        fields.put("formaldehyde",map.get("formaldehyde"));
+        fields.put("PM25",map.get("PM25"));
+        fields.put("CO2",map.get("CO2"));
+        fields.put("temperature",map.get("temperature"));
+        fields.put("humidity",map.get("humidity"));
+        fields.put("red",map.get("red"));
+        Map<String,String> tags = new HashMap<>();
+        tags.put("monitorId",map.get("monitorId").toString());
+        tags.put("projectId",map.get("projectId").toString());
+        tags.put("deviceId",map.get("deviceId").toString());
+        MultiFieldPoint  point = MultiFieldPoint.metric(tbAirOriginal).timestamp(timestamp).fields(fields).tags(tags).build();
+        // 同步写入
+        List<MultiFieldPoint> list = new ArrayList<>();
+        list.add(point);
+        multiFieldPutSync(list);
+        logger.info("快照写入移动平均值结束");
     }
 
 }

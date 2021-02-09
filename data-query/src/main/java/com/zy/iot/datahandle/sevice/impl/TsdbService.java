@@ -165,6 +165,35 @@ public class TsdbService implements ITsdbService {
         return null;
     }
 
+    @Override
+    public List<AirQueryData> queryFirstData(TSDBQueryParam tsdbQP) {
+        String sql = "SELECT deviceId, monitorId, projectId, " +
+                "TO_CHAR(localtime(MAX(`timestamp`), '+0800'), 'yyyy-MM-dd HH:mm:ss') AS ltime," +
+                "ts_last(`humidity`, `timestamp`) as humidity , " +
+                "ts_last(`temperature`, `timestamp`) as temperature , " +
+                "ts_last(`formaldehyde`, `timestamp`) as formaldehyde , " +
+                "ts_last(`CO2`, `timestamp`) as CO2 , " +
+                "ts_last(`PM25`, `timestamp`) as PM25 , " +
+                "ts_last(`TVOC`, `timestamp`) as TVOC , " +
+                "ts_last(`red`, `timestamp`) as red  " +
+                "FROM `tsdb`.`"+tsdbQP.getMetric()+"` WHERE `timestamp` BETWEEN "+tsdbQP.getStartTime()+" and "+tsdbQP.getEndTime()+" ";
+
+        if(tsdbQP.getTagKVMap()!=null){
+            for(Map.Entry<String,String> ent:tsdbQP.getTagKVMap().entrySet()){
+                sql = sql +" and `"+ent.getKey()+"` = '"+ent.getValue()+"'";
+            }
+        }
+        if(tsdbQP.getTagInKVMap()!=null){
+            for(Map.Entry<String,String> ent:tsdbQP.getTagInKVMap().entrySet()){
+                sql = sql +" and `"+ent.getKey()+"` in ("+String.join(",",ent.getValue())+")";
+            }
+        }
+
+        sql = sql + " GROUP BY `monitorId`,`deviceId`,`projectId`";
+        logger.debug("查询sql:" + sql);
+        return tsdbCon.querySql(sql);
+    }
+
     /**
      * 数据写入tsdb
      * @param multiValuedPoint
